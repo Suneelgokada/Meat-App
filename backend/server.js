@@ -1,7 +1,16 @@
+<<<<<<< HEAD
+=======
+require('dotenv').config();
+>>>>>>> e8b3c264054ed86ddf261e0d28917fe6adc84314
 const express = require("express");
 const dotenv = require("dotenv");
 const mongoose = require("mongoose");
 const cors = require("cors");
+<<<<<<< HEAD
+=======
+const userRoutes = require("./routes/userRoutes");
+const adminRoutes = require("./routes/adminRoutes");
+>>>>>>> e8b3c264054ed86ddf261e0d28917fe6adc84314
 
 
 dotenv.config();
@@ -18,7 +27,13 @@ mongoose.connect(process.env.MONGO_URI)
   .catch((error) => console.log(" MongoDB connection error:", error));
 
 
+<<<<<<< HEAD
 
+=======
+// Routes
+app.use('/api/user',userRoutes );
+app.use('/api/admin',adminRoutes);
+>>>>>>> e8b3c264054ed86ddf261e0d28917fe6adc84314
 
 
 
