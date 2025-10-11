@@ -1,7 +1,10 @@
+require('dotenv').config();
 const express = require("express");
 const dotenv = require("dotenv");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const userRoutes = require("./routes/userRoutes");
+const adminRoutes = require("./routes/adminRoutes");
 
 
 dotenv.config();
@@ -18,7 +21,9 @@ mongoose.connect(process.env.MONGO_URI)
   .catch((error) => console.log(" MongoDB connection error:", error));
 
 
-
+// Routes
+app.use('/api/user',userRoutes );
+app.use('/api/admin',adminRoutes);
 
 
 
