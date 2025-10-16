@@ -1,41 +1,165 @@
 const jwt = require('jsonwebtoken');
-
-const verifyToken = (req, res, next) => {
+const User = require('../models/User');
+// const Vendor = require('../models/Vendor');
+ 
+// =================== Verify Token ===================
+const verifyToken = async (req, res, next) => {
   try {
-    const token = req.headers.authorization?.split(' ')[1];
-
+    // Get token from Authorization header
+    const authHeader = req.headers.authorization;
+   
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({
+        success: false,
+        message: 'Access denied. No token provided or invalid format. Use: Bearer <token>'
+      });
+    }
+ 
+    const token = authHeader.split(' ')[1];
+ 
     if (!token) {
-      return res.status(401).json({ success: false, message: 'Token required' });
+      return res.status(401).json({
+        success: false,
+        message: 'Token required'
+      });
     }
-
+ 
+    // Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded;
+   
+    console.log('Decoded Token:', decoded);
+ 
+    // Attach decoded token to request
+    req.tokenData = decoded;
     next();
   } catch (error) {
-    return res.status(401).json({ success: false, message: 'Invalid token' });
-  }
-};
-
-const verifyAdmin = (req, res, next) => {
-  try {
-    if (req.user.role !== 'admin') {
-      return res.status(403).json({ success: false, message: 'Admin access required' });
+    console.error('Token verification error:', error.message);
+   
+    if (error.name === 'JsonWebTokenError') {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid token'
+      });
     }
-    next();
-  } catch (error) {
-    return res.status(403).json({ success: false, message: 'Access denied' });
-  }
-};
-
-const verifyUser = (req, res, next) => {
-  try {
-    if (req.user.role !== 'user') {
-      return res.status(403).json({ success: false, message: 'User access required' });
+   
+    if (error.name === 'TokenExpiredError') {
+      return res.status(401).json({
+        success: false,
+        message: 'Token expired'
+      });
     }
-    next();
-  } catch (error) {
-    return res.status(403).json({ success: false, message: 'Access denied' });
+   
+    return res.status(401).json({
+      success: false,
+      message: 'Token verification failed'
+    });
   }
 };
-
-module.exports = { verifyToken, verifyAdmin, verifyUser };
+ 
+// =================== Verify Vendor (NEW) ===================
+const verifyVendor = async (req, res, next) => {
+  try {
+    const decoded = req.tokenData;
+ 
+    if (!decoded) {
+      return res.status(403).json({
+        success: false,
+        message: 'Token data not found'
+      });
+    }
+ 
+    console.log('Token Role:', decoded.role);
+    console.log('Vendor ID:', decoded.id);
+ 
+    // Check if role is vendor
+    const role = decoded.role?.toLowerCase();
+    if (role !== 'vendor') {
+      return res.status(403).json({
+        success: false,
+        message: 'Vendor access required. Your role: ' + decoded.role
+      });
+    }
+ 
+    // Find vendor in DB
+    const vendor = await Vendor.findById(decoded.id);
+   
+    if (!vendor) {
+      return res.status(403).json({
+        success: false,
+        message: 'Vendor account not found'
+      });
+    }
+ 
+    // Check vendor status
+    if (vendor.status !== 'active') {
+      return res.status(403).json({
+        success: false,
+        message: `Vendor account is ${vendor.status}. Contact Super Admin for activation.`
+      });
+    }
+ 
+    console.log('Vendor verified:', vendor.email);
+ 
+    // Attach vendor object for controllers
+    req.user = vendor; // Using req.user to maintain consistency
+    next();
+  } catch (error) {
+    console.error('verifyVendor error:', error);
+    return res.status(403).json({
+      success: false,
+      message: 'Vendor verification failed: ' + error.message
+    });
+  }
+};
+ 
+// =================== Verify User ===================
+const verifyUser = async (req, res, next) => {
+  try {
+    const decoded = req.tokenData;
+ 
+    if (!decoded) {
+      return res.status(403).json({
+        success: false,
+        message: 'Token data not found'
+      });
+    }
+ 
+    // Check if role is user
+    const role = decoded.role?.toLowerCase();
+    if (role !== 'user') {
+      return res.status(403).json({
+        success: false,
+        message: 'User access required. Your role: ' + decoded.role
+      });
+    }
+ 
+    // Find user in DB
+    const user = await User.findById(decoded.id);
+   
+    if (!user) {
+      return res.status(403).json({
+        success: false,
+        message: 'User account not found'
+      });
+    }
+ 
+    if (!user.is_active) {
+      return res.status(403).json({
+        success: false,
+        message: 'User account is inactive'
+      });
+    }
+ 
+    // Attach user object
+    req.user = user;
+    next();
+  } catch (error) {
+    console.error('verifyUser error:', error);
+    return res.status(403).json({
+      success: false,
+      message: 'User verification failed: ' + error.message
+    });
+  }
+};
+ 
+module.exports = { verifyToken, verifyVendor, verifyUser };

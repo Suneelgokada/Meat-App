@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 
-const OtpInput = ({ length = 6, onChange }) => {
+const OtpInput = ({ length = 6, onChange, disabled = false }) => {
   const [otp, setOtp] = useState(Array(length).fill(''));
   const inputsRef = useRef([]);
 
@@ -40,6 +40,7 @@ const OtpInput = ({ length = 6, onChange }) => {
           type="text"
           maxLength={1}
           value={digit}
+          disabled={disabled}
           ref={(el) => (inputsRef.current[idx] = el)}
           onChange={(e) => handleChange(e, idx)}
           onKeyDown={(e) => handleKeyDown(e, idx)}

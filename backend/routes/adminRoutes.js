@@ -15,4 +15,3 @@ router.post('/reset-password', adminController.resetPassword);
 // router.get('/profile', verifyToken, verifyAdmin, authMiddleware.getAdminProfile);
 
 module.exports = router;
-

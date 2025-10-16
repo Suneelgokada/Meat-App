@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-
+ 
 const userSchema = new mongoose.Schema({
   phone: {
     type: String,
@@ -12,6 +12,10 @@ otp: { type: String, required: true },
     type: Boolean,
     default: false,
   },
+  is_active: {
+  type: Boolean,
+  default: true,  
+},
   createdAt: {
     type: Date,
     default: Date.now,
@@ -21,9 +25,5 @@ otp: { type: String, required: true },
     default: Date.now,
   },
 });
-
+ 
 module.exports = mongoose.model('User', userSchema);
-
-
-
-
