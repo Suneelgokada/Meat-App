@@ -32,7 +32,7 @@ const Category = ({ categories, loading }) => {
             <div
               key={_id}
               className="flex flex-col items-center cursor-pointer transition-transform duration-200 hover:scale-105"
-              onClick={() => navigate(`/category/${category_slug}`)}
+              onClick={() => navigate(`/category/${_id}`)}
             >
               <img
                 src={category_image?.url}

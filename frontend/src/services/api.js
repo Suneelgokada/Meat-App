@@ -1,6 +1,6 @@
 export const fetchCategories = async (token) => {
   const headers = token ? { Authorization: `Bearer ${token}` } : {};
-  const res = await fetch("http://localhost:4000/api/public/categories", { headers });
+  const res = await fetch("http://localhost:4000/api/public/categories", {headers});
   const json = await res.json();
   return json.data || [];
 };
