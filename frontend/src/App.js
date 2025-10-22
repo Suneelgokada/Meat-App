@@ -8,16 +8,17 @@ import UserLogin from "./Components/UserLogin";
 import Profile from "./Components/Profile";
 import { AuthProvider } from "./context/AuthContext"; // ✅ Adjust path if needed
 
+
 function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
         <Header /> {/* ✅ Always visible */}
-
         <Routes>
           <Route path="/" element={<Body />} />         {/* ✅ Homepage */}
           <Route path="/login" element={<UserLogin />} /> {/* ✅ Login page */}
           <Route path="/profile" element={<Profile />} /> {/* ✅ Profile page */}
+           <Route path="/category/:category_slug" element={<Body />} />
         </Routes>
         <Footer /> {/* ✅ Always visible */}
       </AuthProvider>

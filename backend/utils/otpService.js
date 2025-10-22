@@ -13,7 +13,7 @@ const sendOTPViaTwilio = async (phoneNumber) => {
     const verification = await client.verify.v2
       .services(process.env.TWILIO_VERIFY_SERVICE_SID)
       .verifications.create({
-        to: `+91${phoneNumber}`,
+        to: `+91${phoneNumber}`, 
         channel: 'sms',
       });
 

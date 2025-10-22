@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
-import { Pencil, Check, X} from "lucide-react";
+import { Pencil, Check, X } from "lucide-react";
 
 const Profile = () => {
   const { isLoggedIn } = useAuth();
@@ -11,12 +11,12 @@ const Profile = () => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
   const [editingField, setEditingField] = useState(null);
   const [tempName, setTempName] = useState("");
   const [tempEmail, setTempEmail] = useState("");
+  const [nameError, setNameError] = useState("");
+  const [emailError, setEmailError] = useState("");
 
-  // ======================== FETCH PROFILE ========================
   useEffect(() => {
     if (!isLoggedIn) return;
     const fetchProfile = async () => {
@@ -26,7 +26,7 @@ const Profile = () => {
         const token = localStorage.getItem("token");
         if (!token) throw new Error("No token found");
 
-        const res = await fetch("http://localhost:4000/api/userprofile/profile", {
+        const res = await fetch("http://localhost:4000/api/user-profile/profile", {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -54,11 +54,10 @@ const Profile = () => {
     fetchProfile();
   }, [isLoggedIn]);
 
-  // ======================== UPDATE PROFILE ========================
   const updateProfile = async (updatedFields) => {
     const token = localStorage.getItem("token");
     try {
-      const res = await fetch("http://localhost:4000/api/userprofile/profile", {
+      const res = await fetch("http://localhost:4000/api/user-profile/profile", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -76,32 +75,52 @@ const Profile = () => {
         phone: data.profile?.userId?.phone || profile.phone,
       });
       setEditingField(null);
+      setNameError("");
+      setEmailError("");
     } catch (err) {
       console.error(err);
-      alert(err.message);
+      if (editingField === "name") setNameError(err.message);
+      if (editingField === "email") setEmailError(err.message);
     }
   };
 
   const handleSave = (field) => {
-    if (field === "name" && !tempName.trim()) return alert("Name cannot be empty");
-    if (field === "email" && !tempEmail.trim()) return alert("Email cannot be empty");
+    if (field === "name") {
+      if (!tempName.trim()) {
+        setNameError("Name cannot be empty");
+        return;
+      }
+      setNameError("");
+    }
+
+    if (field === "email") {
+      if (!tempEmail.trim()) {
+        setEmailError("Email cannot be empty");
+        return;
+      }
+      setEmailError("");
+    }
 
     updateProfile({
-      name: field === "name" ? tempName : tempName || profile.name,
-      email: field === "email" ? tempEmail : tempEmail || profile.email,
+      name: field === "name" ? tempName : profile.name,
+      email: field === "email" ? tempEmail : profile.email,
     });
   };
 
   const handleCancel = (field) => {
-    if (field === "name") setTempName(profile.name);
-    if (field === "email") setTempEmail(profile.email);
+    if (field === "name") {
+      setTempName(profile.name);
+      setNameError("");
+    }
+    if (field === "email") {
+      setTempEmail(profile.email);
+      setEmailError("");
+    }
     setEditingField(null);
   };
 
-  // ======================== UI ========================
   return (
     <div className="w-full max-w-md mx-auto p-4 flex flex-col items-center">
-      {/* Avatar Section */}
       <div className="relative w-full bg-[#ffe0e4] text-white pt-16 pb-28 rounded-b-[100px]">
         <div className="absolute left-1/2 -bottom-12 transform -translate-x-1/2 w-24 h-24 rounded-full bg-white border-4 border-red-500 flex items-center justify-center text-red-500 text-3xl font-bold shadow-lg">
           {profile.name?.charAt(0).toUpperCase()}
@@ -127,25 +146,26 @@ const Profile = () => {
                   autoFocus
                 />
                 <div className="flex items-center gap-2 ml-2">
-                  <button onClick={() => handleSave("email")}>
+                  <button onClick={() => handleSave("name")}>
                     <Check size={18} className="text-green-600" />
                   </button>
-                  <button onClick={() => handleCancel("email")}>
+                  <button onClick={() => handleCancel("name")}>
                     <X size={18} className="text-gray-400" />
                   </button>
                 </div>
               </>
             ) : (
               <>
-                <span className="flex-1">
-                  {profile.name || "Your email address"}
-                </span>
+                <span className="flex-1">{profile.name || "Your name"}</span>
                 <button onClick={() => setEditingField("name")}>
                   <Pencil size={18} className="text-gray-500 hover:text-pink-500" />
                 </button>
               </>
             )}
           </div>
+          {editingField === "name" && nameError && (
+            <div className="text-red-500 text-xs mt-1">{nameError}</div>
+          )}
         </div>
 
         {/* Email */}
@@ -172,18 +192,17 @@ const Profile = () => {
               </>
             ) : (
               <>
-                <span className="flex-1">
-                  {profile.email || "Your email address"}
-                </span>
+                <span className="flex-1">{profile.email || "Your email address"}</span>
                 <button onClick={() => setEditingField("email")}>
                   <Pencil size={18} className="text-gray-500 hover:text-pink-500" />
                 </button>
               </>
             )}
           </div>
+          {editingField === "email" && emailError && (
+            <div className="text-red-500 text-xs mt-1">{emailError}</div>
+          )}
         </div>
-
-         
 
         {/* Phone */}
         <div className="border-b py-2">
